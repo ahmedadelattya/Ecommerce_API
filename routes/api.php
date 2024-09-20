@@ -11,9 +11,11 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 ####### Authenticate APIs
+// Registration
+Route::post('/register', [AuthController::class, 'register']);
 
-//login
+// Login (token creation)
 Route::post('/sanctum/token', [AuthController::class, 'login']);
 
-//logout
-Route::post("/sanctum/logout", [AuthController::class, 'logout'])->middleware('auth:sanctum');
+// Logout (token revocation)
+Route::post('/sanctum/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');

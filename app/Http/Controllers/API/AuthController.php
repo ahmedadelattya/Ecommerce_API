@@ -10,6 +10,30 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    public function register(Request $request)
+    {
+        // Validate the request
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+        // Create the user
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Generate token for the registered user
+        $token = $user->createToken($request->device_name ?? 'default_device')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ], 201);
+    }
+
     public function login(Request $request)
     {
         $request->validate([
@@ -27,13 +51,13 @@ class AuthController extends Controller
         if ($user->tokens()->count() < 3) {
             return $user->createToken($request->device_name)->plainTextToken;
         }
-        return response()->json(['message' => 'Maximum accounts reached please logout from one of them'], 422);
+        return response()->json(['message' => 'Maximum number of sessions reached. Please logout from one device to continue.'], 422);
     }
 
 
-    public function logout () {
+    public function logout()
+    {
         $user = Auth::user();
-        # remove current token
         $user->currentAccessToken()->delete();
         return response()->json(['message' => 'Logged out successfully'], 200);
     }
