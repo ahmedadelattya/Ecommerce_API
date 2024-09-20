@@ -19,3 +19,9 @@ Route::post('/sanctum/token', [AuthController::class, 'login']);
 
 // Logout (token revocation)
 Route::post('/sanctum/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+//Routes for the admins
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {});
+
+//Routes for the admins
+Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {});
