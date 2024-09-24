@@ -24,13 +24,17 @@ Route::post('/sanctum/token', [AuthController::class, 'login']);
 Route::post('/sanctum/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 //Routes for the admins
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {});
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::put('/products/{id}', [ProductController::class, 'update']);
+    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+});
 
 //Routes for the customers
 Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {});
 
 //public routes for unauthenticated users
 Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/categories', [CategoryController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
-Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/tags', [TagController::class, 'index']);
