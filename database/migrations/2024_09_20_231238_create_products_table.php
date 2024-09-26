@@ -18,7 +18,6 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->decimal('price', 10, 2);
             $table->decimal('discount_percentage', 5, 2)->nullable();
-            $table->decimal('rating', 3, 2)->nullable();
             $table->integer('stock');
             $table->string('brand')->nullable();
             $table->string('sku')->unique();
@@ -28,13 +27,10 @@ return new class extends Migration
             $table->decimal('dimension_depth', 8, 2)->nullable();
             $table->string('warranty_information')->nullable();
             $table->string('shipping_information')->nullable();
-            $table->string('availability_status')->nullable();
+            $table->enum('availability_status', ['in-stock', 'out-stock'])->default('in-stock');
             $table->string('return_policy')->nullable();
             $table->integer('minimum_order_quantity')->default(1);
-            $table->json('tags')->nullable();
-            $table->json('meta')->nullable();
-            $table->json('images')->nullable();
-            $table->string('thumbnail')->nullable();
+            $table->string('barcode')->nullable();
             $table->timestamps();
         });
     }

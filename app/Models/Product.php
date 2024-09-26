@@ -11,12 +11,10 @@ class Product extends Model
     protected $fillable = [
         'title',
         'description',
-        'category_id', // Foreign key for category
+        'category_id',
         'price',
         'discount_percentage',
-        'rating',
         'stock',
-        'tags',
         'brand',
         'sku',
         'weight',
@@ -28,16 +26,11 @@ class Product extends Model
         'availability_status',
         'return_policy',
         'minimum_order_quantity',
-        'meta',
-        'images',
-        'thumbnail'
+        'barcode',
+        'qr_code'
     ];
 
-    protected $casts = [
-        'tags' => 'array',
-        'meta' => 'array',
-        'images' => 'array',
-    ];
+    protected $appends = ['meta', 'thumbnail', 'dimensions', 'average_rating'];
 
     public function category()
     {
@@ -62,5 +55,41 @@ class Product extends Model
     public function images()
     {
         return $this->hasMany(ProductImage::class);
+    }
+
+    // Accessor to get the thumbnail image
+    public function getThumbnailAttribute()
+    {
+        $thumbnail = $this->hasOne(ProductImage::class)->where('is_thumbnail', true)->first();
+        return $thumbnail ? $thumbnail->url : null;
+    }
+    // Accessor to calculate the average rating
+    public function getAverageRatingAttribute()
+    {
+        return $this->reviews()->avg('rating') ?? 0;  // Default to 0 if no reviews
+    }
+
+    // Accessor for product dimensions
+    public function getDimensionsAttribute()
+    {
+        return [
+            'width' => $this->dimension_width,
+            'height' => $this->dimension_height,
+            'depth' => $this->dimension_depth,
+        ];
+    }
+    // Accessor for custom meta
+    public function getMetaAttribute()
+    {
+        return [
+            'createdAt' => $this->created_at->toIso8601String(),
+            'updatedAt' => $this->updated_at->toIso8601String(),
+            'barcode' => $this->barcode,
+            'qrCode' => $this->qrCode(),
+        ];
+    }
+    public function qrCode()
+    {
+        return 'https://example.com/qrcode/' . $this->id;
     }
 }
