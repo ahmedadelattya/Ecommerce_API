@@ -9,6 +9,8 @@ use App\Models\Product;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 
 class ProductController extends Controller
 {
@@ -102,7 +104,6 @@ class ProductController extends Controller
             // Return an error response
             return response()->json([
                 'message' => 'Failed to create the product.',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -112,8 +113,18 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::findOrFail($id);
-        return response()->json(new ProductResource($product));
+        try {
+            // Find the product by its ID
+            $product = Product::findOrFail($id);
+
+            // Return the product wrapped in a resource
+            return response()->json(new ProductResource($product));
+        } catch (ModelNotFoundException $e) {
+            // Return a custom error message if the product is not found
+            return response()->json([
+                'message' => 'Product not found.',
+            ], 404);
+        }
     }
 
     /**
