@@ -24,13 +24,47 @@ class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request) {}
+    public function store(Request $request) {
+          // Validate the request data
+          $validatedData = $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name',
+        ]);
+
+        // Begin a transaction
+        DB::beginTransaction();
+
+        try {
+            // Create the new category
+            $category = Category::create($validatedData);
+            // Generate the slug from the category name
+            $category->slug = Str::slug($category->name);
+            $category->save();
+
+            // Commit the transaction
+            DB::commit();
+
+            // Return the created category as a resource
+            return response()->json([
+                'message' => 'Category created successfully',
+                'category' => new CategoryResource($category)
+            ], 201);
+        } catch (\Exception $e) {
+            // Rollback the transaction if there is any error
+            DB::rollBack();
+
+            // Return an error response
+            return response()->json([
+                'message' => 'Failed to create the category: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 
     /**
      * Display the specified resource.
      */
     public function show(string $slug)
     {
+        
         $category = Category::with('products')->where('slug', $slug)->first();
 
         if (!$category) {
@@ -99,7 +133,7 @@ class CategoryController extends Controller
             $category = Category::where('slug', $slug)->firstOrFail();
 
 
-            // Optionally, handle the case where the category has associated products
+            // handle the case where the category has associated products
             if ($category->products()->count() > 0) {
                 return response()->json([
                     'message' => 'Category cannot be deleted because it has associated products.',

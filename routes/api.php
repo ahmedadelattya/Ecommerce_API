@@ -25,14 +25,25 @@ Route::post('/sanctum/logout', [AuthController::class, 'logout'])->middleware('a
 
 //Routes for the admins
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+
+    //product routes
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+
+    //category routes
     Route::get('/products/categories', [CategoryController::class, 'index']);
+    Route::post('/products/categories', [CategoryController::class, 'store']);
     Route::get('/products/categories/{slug}', [CategoryController::class, 'show']);
     Route::put('/products/categories/{slug}', [CategoryController::class, 'update']);
     Route::delete('/products/categories/{slug}', [CategoryController::class, 'destroy']);
+
+    //tag routes
     Route::get('/products/tags', [TagController::class, 'index']);
+    Route::post('/products/tags', [TagController::class, 'store']);
+    Route::get('/products/tags/{id}', [TagController::class, 'show']);
+    Route::put('/products/tags/{id}', [TagController::class, 'update']);
+    Route::delete('/products/tags/{id}', [TagController::class, 'destroy']);
 });
 
 //Routes for the customers
