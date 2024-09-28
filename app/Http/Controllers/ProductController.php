@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Category;
 use App\Models\Product;
@@ -10,7 +11,7 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-
+use Illuminate\Support\Facades\Storage as FacadesStorage;
 
 class ProductController extends Controller
 {
@@ -96,14 +97,14 @@ class ProductController extends Controller
             DB::commit();
 
             // Return a success response
-            return response()->json(['message' => 'Product created successfully', 'product' => $product], 201);
+            return response()->json(['message' => 'Product created successfully', 'product' => new ProductResource($product)], 201);
         } catch (\Exception $e) {
             // Rollback the transaction if there is any error
             DB::rollBack();
 
-            // Return an error response
             return response()->json([
                 'message' => 'Failed to create the product.',
+                'error'=>$e->getMessage()
             ], 500);
         }
     }
@@ -123,6 +124,7 @@ class ProductController extends Controller
             // Return a custom error message if the product is not found
             return response()->json([
                 'message' => 'Product not found.',
+                'error'=>$e->getMessage()
             ], 404);
         }
     }
@@ -130,26 +132,123 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateProductRequest $request, string $id)
     {
-        //
-    }
+        // Begin a transaction
+        DB::beginTransaction();
+    
+        try {
+            // Find the product
+            $product = Product::findOrFail($id);
+    
+            // Update product details
+            $validatedData = $request->validated();
+            
+            $category = Category::where('name', $validatedData['category_name'])->first();
+            $validatedData['category_id'] = $category->id;
+    
+            // Update the product
+            $product->update($validatedData);
+    
+            // Update tags if provided
+            if (!empty($validatedData['tags'])) {
+                $tagIds = Tag::whereIn('name', $validatedData['tags'])->pluck('id');
+                $product->tags()->sync($tagIds);
+            }
+    
+           // Handle the uploaded thumbnail image if provided
+        if ($request->hasFile('thumbnail')) {
+            // Delete the old thumbnail file from storage
+            $oldThumbnail = $product->images()->where('is_thumbnail', 1)->first();
+            if ($oldThumbnail) {
+                FacadesStorage::disk('products_images')->delete($oldThumbnail->url);
+                $oldThumbnail->delete(); // Delete the thumbnail record from DB
+            }
+
+            // Upload new thumbnail and save it
+            $thumbnailPath = $request->file('thumbnail')->store('product-thumbnails', 'products_images');
+            $product->images()->create(['url' => $thumbnailPath, 'is_thumbnail' => 1]);
+        }
+
+        // Handle image deletion if specified
+        if ($request->has('delete_images')) {
+            $imagesToDelete = $request->input('delete_images'); // Array of image IDs to delete
+            foreach ($imagesToDelete as $imageId) {
+                $image = $product->images()->where('id', $imageId)->first();
+                if ($image) {
+                    FacadesStorage::disk('products_images')->delete($image->url); // Delete from storage
+                    $image->delete(); // Delete from DB
+                }
+            }
+        }
+
+        // Handle new images if provided
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $imagePath = $image->store('product-images', 'products_images');
+                $product->images()->create(['url' => $imagePath, 'is_thumbnail' => 0]);
+            }
+        }
+    
+            // Commit the transaction
+            DB::commit();
+    
+            // Return a success response
+            return response()->json(['message' => 'Product updated successfully', 'product' => new ProductResource($product)], 200);
+        } catch (\Exception $e) {
+            // Rollback the transaction if there is any error
+            DB::rollBack();
+    
+            // Return an error response
+            return response()->json([
+                'message' => 'Failed to update the product.',
+            ], 500);
+        }
+    }    
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        //
+         // Begin a transaction
+    DB::beginTransaction();
+
+    try {
+        // Find the product
+        $product = Product::findOrFail($id);
+
+        // Detach all tags associated with the product
+        $product->tags()->detach();
+
+        // Delete all associated images
+        foreach ($product->images as $image) {
+            // Delete the image from the storage
+            if (FacadesStorage::disk('products_images')->exists($image->url)) {
+                FacadesStorage::disk('products_images')->delete($image->url);
+            }
+            // Delete the image record from the database
+            $image->delete();
+        }
+
+        // Delete the product
+        $product->delete();
+
+        // Commit the transaction
+        DB::commit();
+
+        // Return a success response
+        return response()->json(['message' => 'Product deleted successfully.'], 200);
+    } catch (ModelNotFoundException $e) {
+        // Rollback the transaction if the product is not found
+        DB::rollBack();
+
+        return response()->json(['message' => 'Product not found.'], 404);
+    } catch (\Exception $e) {
+        // Rollback the transaction if there's any other error
+        DB::rollBack();
+
+        return response()->json(['message' => 'Failed to delete the product.'], 500);
     }
-
-    private function handleImageUpload(StoreProductRequest $request, Product $product): void
-    {
-        // Store new image
-        $image = $request->file('thumbnail');
-        $directory = 'products_images';
-        $newImagePath = $image->store('thumbnails', $directory);
-
-        $product->thumbnail = $newImagePath; // Update user image path
     }
 }
