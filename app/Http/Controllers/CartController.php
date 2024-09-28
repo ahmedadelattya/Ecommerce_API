@@ -44,6 +44,9 @@ class CartController extends Controller
         // Get product details
         $product = Product::findOrFail($request->product_id);
 
+        // Calculate discounted price
+        $discountedPrice = $this->getDiscountedPrice($product);
+
         // Check if the product already exists in the cart
         $cartItem = $cart->items()->where('product_id', $product->id)->first();
 
@@ -51,15 +54,15 @@ class CartController extends Controller
             // If product exists, update the quantity and total price
             $cartItem->update([
                 'quantity' => $cartItem->quantity + $request->quantity,
-                'total' => ($cartItem->quantity + $request->quantity) * $cartItem->price
+                'total' => ($cartItem->quantity + $request->quantity) * $discountedPrice
             ]);
         } else {
             // If product doesn't exist, create a new cart item
             $cartItem = $cart->items()->create([
                 'product_id' => $product->id,
                 'quantity' => $request->quantity,
-                'price' => $product->price,
-                'total' => $product->price * $request->quantity
+                'price' => $discountedPrice,
+                'total' => $discountedPrice * $request->quantity
             ]);
         }
 
@@ -95,10 +98,16 @@ class CartController extends Controller
             return response()->json(['message' => 'Product not found in cart.'], 404);
         }
 
+        // Get product details
+        $product = Product::findOrFail($productId);
+
+        // Calculate discounted price
+        $discountedPrice = $this->getDiscountedPrice($product);
+
         // Update the cart item quantity and total price
         $cartItem->update([
             'quantity' => $request->quantity,
-            'total' => $cartItem->price * $request->quantity
+            'total' => $discountedPrice * $request->quantity
         ]);
 
         // Update the cart total and item count
@@ -113,6 +122,19 @@ class CartController extends Controller
         ], 200);
     }
 
+    /**
+     * Helper function to calculate the discounted price of a product.
+     */
+    private function getDiscountedPrice($product)
+    {
+        if ($product->discount_percentage > 0) {
+            // Calculate discounted price
+            return $product->price * (1 - ($product->discount_percentage / 100));
+        }
+
+        // Return the original price if there's no discount
+        return $product->price;
+    }
     /**
      * Remove a product from the cart.
      */

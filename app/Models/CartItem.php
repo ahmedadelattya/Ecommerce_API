@@ -21,6 +21,6 @@ class CartItem extends Model
     }
     public function getTotalAttribute()
     {
-        return $this->price * $this->quantity;
+        return number_format($this->price * $this->quantity,2);
     }
 }

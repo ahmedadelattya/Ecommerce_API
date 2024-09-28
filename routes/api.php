@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\Authentication;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TagController;
 use Illuminate\Http\Request;
@@ -55,6 +56,7 @@ Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
     Route::put('/cart/update/{productId}', [CartController::class, 'updateProduct']); // Update product in cart
     Route::delete('/cart/remove/{productId}', [CartController::class, 'removeProduct']); // Remove product from cart
     Route::delete('/cart/clear', [CartController::class, 'clearCart']);      // Clear all items in the cart
+    Route::post('/checkout', [CheckoutController::class, 'checkout']);
 });
 
 //public routes for unauthenticated users
