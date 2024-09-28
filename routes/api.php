@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\Authentication;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TagController;
@@ -47,7 +48,14 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 });
 
 //Routes for the customers
-Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {});
+Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
+    //cart routes
+    Route::get('/cart', [CartController::class, 'show']);                   // Show cart
+    Route::post('/cart/add', [CartController::class, 'addProduct']);         // Add product to cart
+    Route::put('/cart/update/{productId}', [CartController::class, 'updateProduct']); // Update product in cart
+    Route::delete('/cart/remove/{productId}', [CartController::class, 'removeProduct']); // Remove product from cart
+    Route::delete('/cart/clear', [CartController::class, 'clearCart']);      // Clear all items in the cart
+});
 
 //public routes for unauthenticated users
 Route::get('/products', [ProductController::class, 'index']);

@@ -26,6 +26,9 @@ class AuthController extends Controller
             'role' => 'customer'
         ]);
 
+        // Create a cart for the user
+        $user->cart()->create();
+
         // Generate token for the registered user
         $token = $user->createToken($request->device_name ?? 'default_device')->plainTextToken;
 

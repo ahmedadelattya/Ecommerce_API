@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class CartItem extends Model
 {
     use HasFactory;
-    protected $fillable = ['cart_id', 'product_id', 'quantity', 'price', 'total'];
+    protected $fillable = ['cart_id', 'product_id', 'quantity', 'price','total'];
 
     public function cart()
     {
@@ -18,5 +18,9 @@ class CartItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+    public function getTotalAttribute()
+    {
+        return $this->price * $this->quantity;
     }
 }
