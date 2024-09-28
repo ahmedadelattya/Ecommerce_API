@@ -82,8 +82,8 @@ class Product extends Model
     public function getMetaAttribute()
     {
         return [
-            'createdAt' => $this->created_at->toIso8601String(),
-            'updatedAt' => $this->updated_at->toIso8601String(),
+            'createdAt' => $this->created_at->diffForHumans(),
+            'updatedAt' => $this->updated_at->diffForHumans(),
             'barcode' => $this->barcode,
             'qrCode' => $this->qrCode(),
         ];

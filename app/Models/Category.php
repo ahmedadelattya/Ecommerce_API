@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -26,5 +27,16 @@ class Category extends Model
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+    
+    // Accessor for human-readable date
+    public function getHumanReadableCreatedAtAttribute()
+    {
+        return Carbon::parse($this->created_at)->diffForHumans();
+    }
+    // Accessor for human-readable updated_at date
+    public function getHumanReadableUpdatedAtAttribute()
+    {
+        return Carbon::parse($this->updated_at)->diffForHumans();
     }
 }
