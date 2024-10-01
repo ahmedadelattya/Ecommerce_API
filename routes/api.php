@@ -49,6 +49,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     //order routes
     Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+
+    //reviews routes
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy']);
 });
 
 //Routes for the customers
@@ -64,6 +67,10 @@ Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
     //order routes
     Route::get('/orders', [CartController::class, 'myOrders']);
     Route::put('/orders/{id}', [CartController::class, 'cancelOrder']);
+
+    //reviews routes
+    Route::post('/products/{product}/reviews', [ReviewController::class, 'store']);
+
 });
 
 //public routes for unauthenticated users

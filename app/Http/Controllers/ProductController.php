@@ -20,15 +20,16 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        // Get query parameters for filtering, sorting, and pagination
+        // Get query parameters for filtering, sorting, searching, and pagination
         $categorySlug = $request->query('category');
         $minPrice = $request->query('min_price');
         $maxPrice = $request->query('max_price');
         $sortBy = $request->query('sort_by', 'created_at');
         $sortOrder = $request->query('sort_order', 'desc');
         $perPage = $request->query('per_page', 10);
-
-        // Fetch products with optional filtering
+        $search = $request->query('search');
+    
+        // Fetch products with optional filtering and searching
         $products = Product::query()
             ->when($categorySlug, function ($query) use ($categorySlug) {
                 return $query->whereHas('category', function ($q) use ($categorySlug) {
@@ -41,10 +42,17 @@ class ProductController extends Controller
             ->when($maxPrice, function ($query) use ($maxPrice) {
                 return $query->where('price', '<=', $maxPrice);
             })
+            ->when($search, function ($query) use ($search) {
+                // Perform search on the product title and description
+                return $query->where(function ($q) use ($search) {
+                    $q->where('title', 'LIKE', "%{$search}%")
+                      ->orWhere('description', 'LIKE', "%{$search}%");
+                });
+            })
             ->orderBy($sortBy, $sortOrder)
             ->paginate($perPage);
-
-        // Return paginated and filtered products
+    
+        // Return paginated, filtered, and searched products
         return ProductResource::collection($products)
             ->additional([
                 'total' => $products->total(),
@@ -52,7 +60,7 @@ class ProductController extends Controller
                 'limit' => $products->perPage(),
             ]);
     }
-
+    
     /**
      * Store a newly created resource in storage.
      */
