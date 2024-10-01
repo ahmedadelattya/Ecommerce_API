@@ -46,6 +46,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::get('/products/tags/{id}', [TagController::class, 'show']);
     Route::put('/products/tags/{id}', [TagController::class, 'update']);
     Route::delete('/products/tags/{id}', [TagController::class, 'destroy']);
+
+    //order routes
+    Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
 });
 
 //Routes for the customers
@@ -57,6 +60,10 @@ Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
     Route::delete('/cart/remove/{productId}', [CartController::class, 'removeProduct']); // Remove product from cart
     Route::delete('/cart/clear', [CartController::class, 'clearCart']);      // Clear all items in the cart
     Route::post('/checkout', [CheckoutController::class, 'checkout']);      // Make the order of items in the cart
+
+    //order routes
+    Route::get('/orders', [CartController::class, 'myOrders']);
+    Route::put('/orders/{id}', [CartController::class, 'cancelOrder']);
 });
 
 //public routes for unauthenticated users
