@@ -44,6 +44,13 @@ class CartController extends Controller
         // Get product details
         $product = Product::findOrFail($request->product_id);
 
+         // Check if enough stock is available
+        $cartItem = $cart->items()->where('product_id', $product->id)->first();
+        $newQuantity = $cartItem ? $cartItem->quantity + $request->quantity : $request->quantity;
+
+        if ($newQuantity > $product->stock) {
+            return response()->json(['message' => 'Insufficient stock available.'], 400);
+        }
         // Calculate discounted price
         $discountedPrice = $this->getDiscountedPrice($product);
 
@@ -101,6 +108,10 @@ class CartController extends Controller
         // Get product details
         $product = Product::findOrFail($productId);
 
+         // Check if enough stock is available for the requested update
+        if ($request->quantity > $product->stock) {
+            return response()->json(['message' => 'Insufficient stock available.'], 400);
+        }
         // Calculate discounted price
         $discountedPrice = $this->getDiscountedPrice($product);
 

@@ -21,7 +21,7 @@ class ProductResource extends JsonResource
             'category' => $this->category->name,
             'price' => $this->price,
             'discountPercentage' => $this->discount_percentage,
-            'rating' => $this->reviews->avg('rating') ?? 0,
+            'rating' => number_format($this->reviews->avg('rating') ?? 0, 2),
             'stock' => $this->stock,
             'tags' => $this->tags->pluck('name'),  // Assuming you have a tags relationship
             'brand' => $this->brand,
@@ -35,20 +35,12 @@ class ProductResource extends JsonResource
             'warrantyInformation' => $this->warranty_information,
             'shippingInformation' => $this->shipping_information,
             'availabilityStatus' => $this->availability_status,
-            'reviews' => $this->reviews->map(function ($review) {
-                return [
-                    'rating' => $review->rating,
-                    'comment' => $review->comment,
-                    'date' => $review->created_at,
-                    'reviewerName' => $review->reviewer_name,
-                    'reviewerEmail' => $review->reviewer_email,
-                ];
-            }),
+            'reviews' => ReviewResource::collection($this->reviews),
             'returnPolicy' => $this->return_policy,
             'minimumOrderQuantity' => $this->minimum_order_quantity,
             'meta' => [
-                'createdAt' => $this->created_at,
-                'updatedAt' => $this->updated_at,
+                'createdAt' => $this->human_readable_created_at,
+                'updatedAt' => $this->human_readable_updated_at,
                 'barcode' => $this->barcode,
                 'qrCode' => $this->qrCode(),
             ],
