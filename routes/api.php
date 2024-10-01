@@ -56,7 +56,7 @@ Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
     Route::put('/cart/update/{productId}', [CartController::class, 'updateProduct']); // Update product in cart
     Route::delete('/cart/remove/{productId}', [CartController::class, 'removeProduct']); // Remove product from cart
     Route::delete('/cart/clear', [CartController::class, 'clearCart']);      // Clear all items in the cart
-    Route::post('/checkout', [CheckoutController::class, 'checkout']);
+    Route::post('/checkout', [CheckoutController::class, 'checkout']);      // Make the order of items in the cart
 });
 
 //public routes for unauthenticated users

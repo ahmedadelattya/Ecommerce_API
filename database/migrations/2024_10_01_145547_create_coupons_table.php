@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('coupons', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Reference to the user who placed the order
-            $table->enum('status', ['processing', 'completed', 'pending','canceled'])->default('pending');
-            $table->decimal('total', 10, 2); // Total price for the order
+            $table->string('code')->unique();
+            $table->decimal('discount_percentage', 5, 2); // Percentage discount
+            $table->date('expiration_date'); // Coupon expiration date
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('coupons');
     }
 };

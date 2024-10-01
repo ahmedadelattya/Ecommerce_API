@@ -17,6 +17,11 @@ class CheckoutController extends Controller
      */
     public function checkout(Request $request)
     {
+        // Validate the input
+        $request->validate([
+            'address' => 'required|string|max:255',
+            'coupon_code' => 'nullable|string|exists:coupons,code', // Coupon code validation
+        ]);
         // Get the authenticated user's cart
         $cart = Auth::user()->cart;
 
@@ -25,6 +30,12 @@ class CheckoutController extends Controller
             return response()->json([
                 'message' => 'Your cart is empty. Add items to proceed with checkout.',
             ], 400);
+        }
+
+        // Retrieve the coupon by the provided code (if exists)
+        $coupon = null;
+        if ($request->coupon_code) {
+            $coupon = Coupon::where('code', $request->coupon_code)->first();
         }
 
         // Begin database transaction
@@ -36,7 +47,9 @@ class CheckoutController extends Controller
                 'user_id' => Auth::id(),
                 'total' => $cart->total,
                 'item_count' => $cart->item_count,
-                'status' => 'pending' // You can manage different order statuses like pending, completed, etc.
+                'status' => 'pending' ,
+                'coupon_id' => $coupon ? $coupon->id : null,
+                'address' => $request->address,
             ]);
 
             // Loop through the cart items and create corresponding order items
