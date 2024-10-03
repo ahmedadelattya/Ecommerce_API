@@ -95,4 +95,17 @@ class AuthController extends Controller
             'user' => $user,
         ]);
     }
+
+    public function destroy(Request $request)
+    {
+    $user = Auth::user();
+
+    // Delete the user account
+    $user->delete();
+
+    // Revoke the user's token (log out the user)
+    $request->user()->currentAccessToken()->delete();
+
+    return response()->json(['message' => 'Account deleted successfully!'], 200);
+    }
 }

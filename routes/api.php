@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
 Route::put('/user/update', [AuthController::class, 'update'])->middleware('auth:sanctum');
+Route::delete('/user/delete', [AuthController::class, 'destroy'])->middleware('auth:sanctum');
 
 ####### Authenticate APIs
 // Registration
