@@ -3,12 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Order;
+use App\Http\Resources\OrderResource;
+
 
 class OrderController extends Controller
 {
     public function myOrders()
 {
-    $orders = Auth::user()->orders()->with('orderItems.product')->get();
+    $orders = Auth::user()->orders()
+    ->where('status', '!=', 'canceled') 
+    ->with('orderItems.product')
+    ->get();
 
     return OrderResource::collection($orders);
 }

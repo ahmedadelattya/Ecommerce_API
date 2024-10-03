@@ -16,7 +16,7 @@ class CartItemResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'product' => new ProductResource($this->whenLoaded('product')), // Assuming you have a ProductResource
+            'product' => $this->product->title,
             'quantity' => $this->quantity,
             'price' => $this->price,
             'sub_total' => $this->getTotalAttribute(), // Calculate subtotal for the item

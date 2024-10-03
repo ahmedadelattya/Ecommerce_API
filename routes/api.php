@@ -8,6 +8,8 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\CouponController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -53,6 +55,13 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     //reviews routes
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy']);
+
+    //coupon routes
+    Route::post('/coupons', [CouponController::class, 'store']); 
+    Route::put('/coupons/{id}', [CouponController::class, 'update']); 
+    Route::delete('/coupons/{id}', [CouponController::class, 'destroy']); 
+    Route::get('/coupons', [CouponController::class, 'index']); 
+    Route::get('/coupons/{id}', [CouponController::class, 'show']); 
 });
 
 //Routes for the customers
@@ -66,8 +75,8 @@ Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'checkout']);      // Make the order of items in the cart
 
     //order routes
-    Route::get('/orders', [CartController::class, 'myOrders']);
-    Route::put('/orders/{id}', [CartController::class, 'cancelOrder']);
+    Route::get('/orders', [OrderController::class, 'myOrders']);
+    Route::put('/orders/{id}', [OrderController::class, 'cancelOrder']);
 
     //reviews routes
     Route::post('/products/{product}/reviews', [ReviewController::class, 'store']);

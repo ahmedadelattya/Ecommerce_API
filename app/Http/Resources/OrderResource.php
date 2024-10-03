@@ -20,6 +20,8 @@ class OrderResource extends JsonResource
             'total_quantity' => $this->orderItems->sum('quantity'),
             'status' => $this->status,
             'items' => OrderItemResource::collection($this->orderItems),
+            'discount_code' => $this->coupon ? $this->coupon->code : null, 
+            'discount_percentage' => $this->coupon ? ($this->coupon->discount_percentage . '%') : null, 
         ];
     }
 }

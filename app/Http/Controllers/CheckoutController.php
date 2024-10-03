@@ -6,6 +6,8 @@ use App\Http\Resources\OrderResource;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Coupon;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -34,9 +36,16 @@ class CheckoutController extends Controller
 
         // Retrieve the coupon by the provided code (if exists)
         $coupon = null;
+        $discount = 0; 
         if ($request->coupon_code) {
             $coupon = Coupon::where('code', $request->coupon_code)->first();
+            $discount = $coupon ? $coupon->discount_percentage : 0; 
         }
+
+        // Calculate the total price after applying the discount
+        $originalTotal = $cart->total;
+        $discountAmount = ($discount / 100) * $originalTotal;
+        $finalTotal = $originalTotal - $discountAmount;
 
         // Begin database transaction
         DB::beginTransaction();
@@ -45,7 +54,7 @@ class CheckoutController extends Controller
             // Create a new order
             $order = Order::create([
                 'user_id' => Auth::id(),
-                'total' => $cart->total,
+                'total' => $finalTotal,
                 'item_count' => $cart->item_count,
                 'status' => 'pending' ,
                 'coupon_id' => $coupon ? $coupon->id : null,
