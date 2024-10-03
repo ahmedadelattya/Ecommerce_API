@@ -16,6 +16,13 @@ public function cancelOrder($orderId)
 {
     $order = Auth::user()->orders()->where('status', 'pending')->findOrFail($orderId);
 
+
+    // Loop through the order items and restore the product stock
+    foreach ($order->orderItems as $item) {
+        $product = $item->product;
+        $product->increment('stock', $item->quantity);
+    }
+
     // Mark the order as canceled
     $order->update(['status' => 'canceled']);
 

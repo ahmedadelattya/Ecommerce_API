@@ -54,6 +54,11 @@ class CheckoutController extends Controller
 
             // Loop through the cart items and create corresponding order items
             foreach ($cart->items as $cartItem) {
+                // Retrieve the product
+                $product = Product::find($cartItem->product_id);
+
+                // Reduce the stock of the product
+                $product->decrement('stock', $cartItem->quantity);
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $cartItem->product_id,
