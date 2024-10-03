@@ -14,9 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::put('/user/update', [AuthController::class, 'update'])->middleware('auth:sanctum');
 
 ####### Authenticate APIs
 // Registration
@@ -67,12 +65,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 //Routes for the customers
 Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
     //cart routes
-    Route::get('/cart', [CartController::class, 'show']);                   // Show cart
-    Route::post('/cart/add', [CartController::class, 'addProduct']);         // Add product to cart
-    Route::put('/cart/update/{productId}', [CartController::class, 'updateProduct']); // Update product in cart
-    Route::delete('/cart/remove/{productId}', [CartController::class, 'removeProduct']); // Remove product from cart
-    Route::delete('/cart/clear', [CartController::class, 'clearCart']);      // Clear all items in the cart
-    Route::post('/checkout', [CheckoutController::class, 'checkout']);      // Make the order of items in the cart
+    Route::get('/cart', [CartController::class, 'show']);                   
+    Route::post('/cart/add', [CartController::class, 'addProduct']);        
+    Route::put('/cart/update/{productId}', [CartController::class, 'updateProduct']); 
+    Route::delete('/cart/remove/{productId}', [CartController::class, 'removeProduct']); 
+    Route::delete('/cart/clear', [CartController::class, 'clearCart']);     
+    Route::post('/checkout', [CheckoutController::class, 'checkout']);      
 
     //order routes
     Route::get('/orders', [OrderController::class, 'myOrders']);

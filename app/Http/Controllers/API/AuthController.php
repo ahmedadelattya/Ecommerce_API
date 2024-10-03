@@ -65,4 +65,34 @@ class AuthController extends Controller
         $user->currentAccessToken()->delete();
         return response()->json(['message' => 'Logged out successfully'], 200);
     }
+
+    public function update(Request $request)
+    {
+        // Validate the input data
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . Auth::id(),
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        // Get the authenticated user
+        $user = Auth::user();
+
+       // Update user information
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        // Only update password if provided
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+
+        return response()->json([
+            'message' => 'User information updated successfully!',
+            'user' => $user,
+        ]);
+    }
 }
